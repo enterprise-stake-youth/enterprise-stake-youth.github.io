@@ -69,6 +69,41 @@
   .two button { flex:1; }
   button.alt { background:#fff; color:var(--accent); border:1px solid var(--accent); }
 
+/* Dash */
+
+  .tiles { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin:14px 0; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; text-align:center; }
+  .tile .n { font-size:28px; font-weight:700; line-height:1.1; }
+  .tile .l { font-size:13px; color:var(--muted); }
+  .n.ok { color:#1a7f37; } .n.wait { color:#9a6700; } .n.bad { color:var(--err); }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .actions a, .actions button { flex:1 1 160px; text-align:center; padding:10px; border-radius:8px; border:1px solid var(--accent);
+    color:var(--accent); background:#fff; font-family:inherit; font-size:14px; font-weight:600; line-height:1.3; text-decoration:none; cursor:pointer; width:auto; }
+  .badge { display:inline-block; font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .b-ok { background:#dafbe1; color:#1a7f37; } .b-wait { background:#fff4cc; color:#9a6700; } .b-bad { background:#fde8e8; color:var(--err); }
+  .att { border-left:3px solid var(--err); padding:6px 10px; margin:8px 0; background:#fff7f7; border-radius:0 8px 8px 0; font-size:14px; }
+  .att .act { color:var(--muted); font-size:13px; }
+  table.people { width:100%; border-collapse:collapse; font-size:14px; }
+  table.people th { text-align:left; color:var(--muted); font-weight:600; font-size:12px; padding:6px 6px 6px 0; border-bottom:1px solid var(--line); }
+  table.people td { padding:8px 6px 8px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+  .mk { font-size:12px; color:var(--muted); }
+  .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .filters button { width:auto; padding:6px 12px; font-family:inherit; font-size:13px; font-weight:600; border-radius:999px; background:#fff; color:var(--accent); border:1px solid var(--line); }
+  .filters button.on { background:var(--accent-soft); border-color:var(--accent); }
+  @media (max-width:520px) { .hide-sm { display:none; } }
+
+/* StakeDash */
+
+  .ev { display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; }
+  .ev h3 { margin:0; font-size:16px; }
+  .ev .meta { color:var(--muted); font-size:13px; }
+  .nums { display:flex; gap:12px; font-size:13px; flex-wrap:wrap; }
+  .nums b { font-size:16px; }
+  .badge { display:inline-block; font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .b-ok { background:#dafbe1; color:#1a7f37; } .b-wait { background:#fff4cc; color:#9a6700; } .b-bad { background:#fde8e8; color:var(--err); }
+  .open { display:inline-block; padding:8px 12px; border:1px solid var(--accent); border-radius:8px; color:var(--accent); text-decoration:none; font-weight:600; font-size:14px; white-space:nowrap; }
+  .past { opacity:.65; }
+
 </style>
 </head>
 <body>
@@ -656,7 +691,7 @@ $('#go').addEventListener('click', () => {
     .withSuccessHandler(r => {
       $('#app').innerHTML = `<header><h1>Submitted — sign-ups are open</h1></header>
         <div class="card"><div class="sent">
-          <div>✅ <b>${esc(f.eventName)}</b> is set up. In a minute or two you'll get an email with the <b>parent sign-up link</b>, your shared event folder, and the leader roster.</div>
+          <div>✅ <b>${esc(f.eventName)}</b> is set up. In a minute or two you'll get an email with the <b>parent sign-up link</b>, your shared event folder, and the event roster.</div>
           <p class="note">The plan also went to ${esc(r.approverTitle)} ${esc(r.approverName)} for approval${r.testMode ? ' (test mode: that email is coming to you)' : ''}. You don't need to wait for it.</p></div>
           <p class="note">Need to change something? Use the same planning link from your email.</p></div>`;
       window.scrollTo(0, 0);
@@ -712,6 +747,105 @@ function send(decision) {
 }
 $('#ok').addEventListener('click', () => send('approve'));
 $('#back').addEventListener('click', () => send('return'));
+
+};
+
+PAGES.Dash = function (M) {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const s = M.s;
+const when = s.past ? 'Event is over' : s.daysUntil === 0 ? 'Today' : s.daysUntil === 1 ? 'Tomorrow' : s.daysUntil > 1 ? 'In ' + s.daysUntil + ' days' : '';
+const approval = { Approved: ['b-ok', 'Approved'], Pending: ['b-wait', 'Approval pending'], Returned: ['b-bad', 'Returned for changes'] }[s.approval];
+let filter = 'all';
+
+function render() {
+  const people = s.people.filter(p => filter === 'all' || (filter === 'attention' ? p.attention.length : p.status === (filter === 'signed' ? 'Signed' : 'Waiting')));
+  const att = s.people.filter(p => p.attention.length);
+  $('#app').innerHTML = `
+<header>
+  <h1>${esc(s.name)}</h1>
+  <div class="sub">${esc(s.dates)}${when ? ' · ' + when : ''}${s.leader ? ' · Leader: ' + esc(s.leader) : ''}</div>
+  <div style="margin-top:8px">${approval ? `<span class="badge ${approval[0]}">${approval[1]}${s.approver && s.approval === 'Approved' ? ' by ' + esc(s.approver) : ''}</span>` : ''}
+    <span class="badge ${s.signupsOpen ? 'b-ok' : 'b-wait'}">${s.signupsOpen ? 'Sign-ups open' : 'Sign-ups closed'}</span></div>
+  ${M.testMode ? '<div class="test">Prototype / test mode.</div>' : ''}
+</header>
+
+<div class="tiles">
+  <div class="tile"><div class="n ok">${s.counts.signed}</div><div class="l">Signed</div></div>
+  <div class="tile"><div class="n wait">${s.counts.waiting}</div><div class="l">Waiting to sign</div></div>
+  <div class="tile"><div class="n bad">${s.counts.attention}</div><div class="l">Need attention</div></div>
+</div>
+
+<div class="card">
+  <div class="actions">
+    <button id="copy">Copy parent sign-up link</button>
+    ${s.folderUrl ? `<a href="${esc(s.folderUrl)}" target="_blank">Signed forms folder</a>` : ''}
+    ${s.rosterUrl ? `<a href="${esc(s.rosterUrl)}" target="_blank">Event roster (medical details)</a>` : ''}
+  </div>
+  <p class="note" style="margin-bottom:0">Allergy, medication, and health <b>details</b> are only in the roster and signed forms (Google sign-in required). This page shows markers only.</p>
+</div>
+
+${att.length ? `<div class="card"><h2>Needs attention</h2>
+  ${att.map(p => p.attention.map(a => `<div class="att"><b>${esc(p.name)}</b>: ${esc(a.issue)}${a.action ? `<div class="act">${esc(a.action)}</div>` : ''}</div>`).join('')).join('')}
+</div>` : ''}
+
+<div class="card">
+  <h2>Everyone (${s.people.length})</h2>
+  <div class="filters">
+    ${[['all', 'All'], ['signed', 'Signed'], ['waiting', 'Waiting'], ['attention', 'Needs attention']].map(f =>
+      `<button data-f="${f[0]}" class="${filter === f[0] ? 'on' : ''}">${f[1]}</button>`).join('')}
+  </div>
+  ${people.length ? `<table class="people">
+    <tr><th>Name</th><th class="hide-sm">Ward</th><th>Age</th><th>Status</th></tr>
+    ${people.map(p => `<tr>
+      <td>${esc(p.name)}${p.adult ? ' <span class="mk">(adult)</span>' : ''}${p.markers.length ? `<div class="mk">${p.markers.map(m => esc(m) + ' ✓').join(' · ')}</div>` : ''}</td>
+      <td class="hide-sm">${esc(p.ward)}</td>
+      <td>${esc(p.age)}</td>
+      <td><span class="badge ${p.attention.length ? 'b-bad' : p.status === 'Signed' ? 'b-ok' : 'b-wait'}">${p.attention.length ? 'Check' : p.status}</span>
+        ${p.signedAt ? `<div class="mk">${esc(String(p.signedAt).slice(5, 10))}</div>` : ''}</td>
+    </tr>`).join('')}
+  </table>` : '<p class="note">No one here yet. Share the parent sign-up link to get started.</p>'}
+</div>
+<p class="note" style="text-align:center">This page updates each time you open it.</p>`;
+
+  $('#copy').addEventListener('click', () => {
+    const done = () => { $('#copy').textContent = 'Copied!'; setTimeout(() => ($('#copy').textContent = 'Copy parent sign-up link'), 2000); };
+    if (navigator.clipboard) navigator.clipboard.writeText(s.parentLink).then(done, () => prompt('Copy this link:', s.parentLink));
+    else prompt('Copy this link:', s.parentLink);
+  });
+  document.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { filter = b.dataset.f; render(); }));
+}
+render();
+
+};
+
+PAGES.StakeDash = function (M) {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const APPROVAL = { Approved: ['b-ok', 'Approved'], Pending: ['b-wait', 'Approval pending'], Returned: ['b-bad', 'Returned'] };
+const upcoming = M.events.filter(e => !e.past), past = M.events.filter(e => e.past);
+const card = e => {
+  const a = APPROVAL[e.approval];
+  const when = e.past ? 'Over' : e.daysUntil === 0 ? 'Today' : e.daysUntil === 1 ? 'Tomorrow' : e.daysUntil > 1 ? 'In ' + e.daysUntil + ' days' : '';
+  return `<div class="card ${e.past ? 'past' : ''}"><div class="ev">
+    <div><h3>${esc(e.name)}</h3>
+      <div class="meta">${esc(e.dates)}${when ? ' · ' + when : ''} · ${esc([e.organization, e.ward].filter(Boolean).join(' · '))}${e.leader ? ' · ' + esc(e.leader) : ''}</div></div>
+    <a class="open" href="${esc(e.dashLink)}" target="_blank">Open</a>
+    <div class="nums"><span><b style="color:#1a7f37">${e.counts.signed}</b> signed</span>
+      <span><b style="color:#9a6700">${e.counts.waiting}</b> waiting</span>
+      <span><b style="color:var(--err)">${e.counts.attention}</b> need attention</span></div>
+    <div>${a ? `<span class="badge ${a[0]}">${a[1]}</span>` : ''} <span class="badge ${e.signupsOpen ? 'b-ok' : 'b-wait'}">${e.signupsOpen ? 'Open' : 'Closed'}</span></div>
+  </div></div>`;
+};
+$('#app').innerHTML = `
+<header>
+  <h1>Youth events</h1>
+  <div class="sub">${esc(M.stake)} · stake view</div>
+  ${M.testMode ? '<div class="test">Prototype / test mode.</div>' : ''}
+</header>
+${upcoming.length ? upcoming.map(card).join('') : '<div class="card"><p class="note" style="margin:0">No upcoming events.</p></div>'}
+${past.length ? `<h2 style="font-size:14px;color:var(--muted);margin:22px 0 4px">Past events</h2>${past.map(card).join('')}` : ''}
+<p class="note" style="text-align:center">Counts update each time you open this page. Please don't share this link outside stake leadership.</p>`;
 
 };
 
