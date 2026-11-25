@@ -477,10 +477,11 @@ function render() {
   </div>
   <div class="q"><div>How often do you want email updates on sign-ups?</div>
     <div class="yn" style="flex-wrap:wrap">
-      ${[['changes', 'As things happen'], ['daily', 'Daily'], ['weekly', 'Weekly (Mondays)'], ['never', 'Never']].map(o =>
+      ${[['changes', 'As things happen (max 1/hour)'], ['daily', 'Daily'], ['weekly', 'Weekly (Mondays)'], ['never', 'Never']].map(o =>
         `<label><input type="radio" name="updates" value="${o[0]}" ${('weekly') === o[0] ? 'checked' : ''}><span>${o[1]}</span></label>`).join('')}
     </div>
-    <div class="note">Updates go only when something changed. Everyone also gets a final email 2 days before the event with the list of who's coming.</div></div>
+    <div class="note">Updates go only when something changed. <b>As things happen</b> can mean a lot of email for big events (Daily is usually better).
+      Everyone also gets a final email 2 days before the event with the list of who's coming.</div></div>
   <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
   <div class="err" id="err"></div>
   <button id="go">Email me the planning link</button>
@@ -607,10 +608,11 @@ ${banner}
     ${inp('chaperones', 'Other supervisors or chaperones', 'Names, separated by commas')}
     <div class="full"><div class="q"><div>How often do you want email updates on sign-ups?</div>
     <div class="yn" style="flex-wrap:wrap">
-      ${[['changes', 'As things happen'], ['daily', 'Daily'], ['weekly', 'Weekly (Mondays)'], ['never', 'Never']].map(o =>
+      ${[['changes', 'As things happen (max 1/hour)'], ['daily', 'Daily'], ['weekly', 'Weekly (Mondays)'], ['never', 'Never']].map(o =>
         `<label><input type="radio" name="updates" value="${o[0]}" ${(P.updates || 'weekly') === o[0] ? 'checked' : ''}><span>${o[1]}</span></label>`).join('')}
     </div>
-    <div class="note">Updates go only when something changed. Everyone also gets a final email 2 days before the event with the list of who's coming.</div></div></div>
+    <div class="note">Updates go only when something changed. <b>As things happen</b> can mean a lot of email for big events (Daily is usually better).
+      Everyone also gets a final email 2 days before the event with the list of who's coming.</div></div></div>
     <div class="full field"><label class="f">Leaders' Google account emails (comma-separated)</label>
       <input type="text" name="leaderAccounts" value="${esc([].concat(P.leaderAccounts || []).join(', '))}" placeholder="you@gmail.com, other.leader@gmail.com">
       <div class="hint">These accounts get access to this event's Google Drive folder only. To add someone later, update this and resubmit (or ask the stake to add them).</div></div>
