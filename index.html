@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<!-- Built by tools/build_site.py from the Apps Script pages. Do not edit by hand. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Stake Youth Permissions</title>
+<style>
+  :root { --ink:#1d2733; --muted:#5b6673; --line:#dde3ea; --bg:#f4f6f9; --card:#fff; --accent:#1f5f8b; --accent-soft:#e6f0f7; --warn:#fff4cc; --err:#b42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+  .wrap { max-width:680px; margin:0 auto; padding:16px 16px 80px; }
+  header { padding:18px 0 8px; }
+  header h1 { font-size:22px; margin:0; }
+  header .sub { color:var(--muted); }
+  .test { background:#fde8e8; color:#8a1c1c; font-size:13px; padding:6px 10px; border-radius:6px; margin-top:10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin:14px 0; }
+  .card h2 { font-size:15px; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); margin:0 0 10px; }
+  .step { display:inline-block; background:var(--accent); color:#fff; border-radius:50%; width:22px; height:22px; text-align:center; font-size:13px; line-height:22px; margin-right:6px; }
+  details summary { cursor:pointer; color:var(--accent); font-weight:600; }
+  pre.long { white-space:pre-wrap; font:14px/1.5 inherit; font-family:inherit; margin:10px 0 0; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+  .grid .full { grid-column:1/-1; }
+  @media (max-width:520px) { .grid { grid-template-columns:1fr; } }
+  label.f { display:block; font-size:13px; color:var(--muted); margin-bottom:3px; }
+  .ro { padding:8px 0; font-weight:600; }
+  input[type=text], textarea { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; font:inherit; background:#fff; }
+  textarea { min-height:64px; resize:vertical; }
+  .q { padding:10px 0; border-top:1px solid var(--line); }
+  .q:first-of-type { border-top:0; }
+  .yn { display:flex; gap:8px; margin:6px 0; }
+  .yn label { flex:0 0 auto; border:1px solid var(--line); border-radius:999px; padding:6px 16px; cursor:pointer; user-select:none; }
+  .yn input { display:none; }
+  .yn input:checked + span { font-weight:700; }
+  .yn label:has(input:checked) { background:var(--accent-soft); border-color:var(--accent); }
+  .detail { margin-top:6px; }
+  .hidden { display:none; }
+  .check { display:flex; gap:10px; align-items:flex-start; padding:6px 0; }
+  .check input { margin-top:4px; width:18px; height:18px; flex:0 0 auto; }
+  .changed { background:var(--warn); border-radius:8px; }
+  .changed-tag { font-size:12px; color:#8a6100; margin-left:6px; }
+  .note { font-size:13px; color:var(--muted); }
+  .perm { font-size:14px; background:#fafbfc; border:1px solid var(--line); border-radius:8px; padding:12px; }
+  .perm p { margin:0 0 8px; }
+  .handoff { background:var(--accent-soft); border-radius:8px; padding:10px 12px; margin:6px 0 10px; font-size:14px; }
+  button { width:100%; padding:14px; font:600 17px inherit; font-family:inherit; color:#fff; background:var(--accent); border:0; border-radius:10px; cursor:pointer; }
+  button:disabled { opacity:.6; }
+  .err { color:var(--err); font-weight:600; margin:10px 0; }
+  .done { text-align:center; padding:40px 10px; }
+  a { color:var(--accent); }
+
+  /* start page */
+  .field { margin:12px 0; }
+  input[type=date], input[type=email] { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; font:inherit; background:#fff; }
+  .hint { font-size:13px; color:var(--muted); margin-top:4px; min-height:1em; }
+  .hint.bad { color:var(--err); }
+  .hp { position:absolute; left:-5000px; width:1px; height:1px; overflow:hidden; }
+  .sent { background:var(--accent-soft); border-radius:10px; padding:16px; }
+  .sent .addr { font-size:20px; font-weight:700; margin:6px 0; word-break:break-all; }
+
+/* Approve */
+
+  table.plan { width:100%; border-collapse:collapse; font-size:14px; }
+  table.plan th { text-align:left; color:var(--muted); font-weight:600; width:38%; padding:6px 8px 6px 0; vertical-align:top; }
+  table.plan td { padding:6px 0; vertical-align:top; white-space:pre-wrap; }
+  table.plan tr + tr th, table.plan tr + tr td { border-top:1px solid var(--line); }
+  .two { display:flex; gap:10px; }
+  .two button { flex:1; }
+  button.alt { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="note" style="padding:40px 0;text-align:center">Loading…</p></div>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzIJ25F9DTuCFcb1QeCRG4AjgHOH9Ax0WtuAynwEtaX-x5_hu-UsKMm6jTDSL4iuBUJIg/exec';
+
+/** Talk to the Apps Script web app without Google sign-in cookies. */
+async function api(fn, args) {
+  const res = await fetch(API, { method: 'POST', body: JSON.stringify({ fn: fn, args: args || [] }) });
+  if (!res.ok) throw new Error('The server could not be reached (' + res.status + '). Please try again.');
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error || 'Something went wrong.');
+  return j.result;
+}
+
+/** Stand-in for google.script.run so the page code runs unchanged. */
+const google = { script: { get run() {
+  let ok = () => {}, fail = () => {};
+  const h = new Proxy({}, { get(_, name) {
+    if (name === 'withSuccessHandler') return f => { ok = f; return h; };
+    if (name === 'withFailureHandler') return f => { fail = f; return h; };
+    return (...args) => { api(name, args).then(r => ok(r), e => fail(e)); };
+  } });
+  return h;
+} } };
+
+const PAGES = {};
+PAGES.Start = function (M) {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ev = M.event;
+const leaderWho = (ev.leader || 'the activity leader') +
+  ([ev.leaderEmail, ev.leaderPhone].filter(Boolean).length ? ' (' + [ev.leaderEmail, ev.leaderPhone].filter(Boolean).join(', ') + ')' : '');
+
+function ymd(s) { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+function ageOn(b, d) {
+  let a = d.getFullYear() - b.getFullYear();
+  if (d.getMonth() < b.getMonth() || (d.getMonth() === b.getMonth() && d.getDate() < b.getDate())) a--;
+  return a;
+}
+
+function renderForm() {
+  $('#app').innerHTML = `
+<header>
+  <h1>${esc(ev.name)}</h1>
+  <div class="sub">${esc(ev.dates)} · Permission and Medical Release</div>
+  ${M.testMode ? '<div class="test">Prototype / test mode — not a real sign-up.</div>' : ''}
+</header>
+
+<div class="card">
+  <h2><span class="step">1</span>The event</h2>
+  ${ev.short ? `<p style="margin-top:0">${esc(ev.short)}</p>` : ''}
+  <details><summary>Read the full event details</summary><pre class="long">${esc(ev.long)}</pre></details>
+</div>
+
+<div class="card">
+  <h2><span class="step">2</span>Who is signing up?</h2>
+  <label class="check"><input type="checkbox" id="adult"><span>This participant is an <b>adult</b> (18 or older) signing up for themselves</span></label>
+  <label class="check"><input type="checkbox" id="notInStake"><span>This participant is <b>not in the Enterprise Utah Stake</b> (new move-in, friend, nonmember, or from another stake)</span></label>
+  <div class="grid">
+    <div class="full field"><label class="f">Participant's full name</label>
+      <input type="text" name="youth" autocomplete="off" placeholder="First and last name"></div>
+    <div class="field" id="dobWrap"><label class="f">Participant's date of birth</label>
+      <input type="date" name="dob"><div class="hint" id="dobHint"></div></div>
+    <div class="field" id="wardWrap"><label class="f">Ward or branch</label>
+      <input type="text" name="ward"></div>
+    <div class="field hidden" id="homeWrap"><label class="f">Home ward and stake (or "none")</label>
+      <input type="text" name="homeUnit" placeholder="e.g. Cedar City 4th Ward, Cedar City Utah Stake"></div>
+    <div class="full field" id="parentWrap"><label class="f">Parent or guardian's full name</label>
+      <input type="text" name="parent" autocomplete="name"></div>
+    <div class="full field"><label class="f" id="emailLabel">Parent or guardian's email</label>
+      <input type="email" name="email" autocomplete="email"></div>
+  </div>
+  <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+  <p class="note" id="privacyNote">We'll email you a secure review-and-sign link. If your email matches the one <b>in the Church directory on Tools</b>, the form comes filled in with the information we have on file. Otherwise you'll get a blank form to fill in, and we'll keep it for next time.</p>
+  <div class="err" id="err"></div>
+  <button id="go">Send me the secure link</button>
+</div>
+<p class="note" style="text-align:center">Questions? Contact ${esc(leaderWho)}.</p>`;
+
+  $('[name=dob]').max = new Date().toISOString().slice(0, 10);
+  $('[name=dob]').addEventListener('input', checkDob);
+  ['adult', 'notInStake'].forEach(id => $('#' + id).addEventListener('change', sync));
+  sync();
+  $('#go').addEventListener('click', submit);
+}
+
+function sync() {
+  const adult = $('#adult').checked, out = $('#notInStake').checked;
+  $('#dobWrap').classList.toggle('hidden', adult);          // adults: birth date is asked when they sign
+  $('#parentWrap').classList.toggle('hidden', adult);
+  $('#wardWrap').classList.toggle('hidden', out);
+  $('#homeWrap').classList.toggle('hidden', !out);
+  $('#emailLabel').textContent = adult ? 'Your email' : "Parent or guardian's email";
+  $('#privacyNote').classList.toggle('hidden', out);        // not in our directory: we use the email typed here
+}
+
+function checkDob() {
+  const h = $('#dobHint'), b = ymd($('[name=dob]').value), start = ymd(ev.startDate) || new Date();
+  h.classList.remove('bad');
+  if (!b) { h.textContent = ''; return true; }
+  if (b > new Date()) { h.textContent = 'That date is in the future.'; h.classList.add('bad'); return false; }
+  h.textContent = `Age at the event: ${ageOn(b, start)}`;   // informational only: adults can sign up too
+  return true;
+}
+
+function submit() {
+  const f = {};
+  ['youth', 'dob', 'ward', 'homeUnit', 'parent', 'email', 'website'].forEach(k => f[k] = ($(`[name=${k}]`).value || '').trim());
+  f.adult = $('#adult').checked; f.notInStake = $('#notInStake').checked;
+  if (f.adult) { f.dob = ''; f.parent = f.youth; }
+  const err = $('#err'); err.textContent = '';
+  const miss = !f.youth.includes(' ') ? "Please enter the participant's first and last name."
+    : !f.adult && !f.dob ? "Please enter the participant's date of birth."
+    : !f.adult && !checkDob() ? 'Please check the date of birth.'
+    : f.notInStake && !f.homeUnit ? 'Please enter the home ward and stake (or "none").'
+    : !f.notInStake && !f.ward ? 'Please enter your ward or branch.'
+    : f.parent.length < 3 ? "Please enter the parent or guardian's full name."
+    : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email) ? 'Please enter a valid email address.' : '';
+  if (miss) { err.textContent = miss; return; }
+  const btn = $('#go'); btn.disabled = true; btn.textContent = 'Sending…';
+  google.script.run
+    .withSuccessHandler(r => showSent(f, r))
+    .withFailureHandler(e => {
+      err.textContent = (e && e.message || String(e)).replace(/^Error:\s*/, '');
+      btn.disabled = false; btn.textContent = 'Send me the secure link';
+    })
+    .startRequest(M.eventId, f);
+}
+
+function showSent(f, r) {
+  const first = esc(f.youth.split(/\s+/)[0]);
+  $('#app').innerHTML = `
+<header><h1>${esc(ev.name)}</h1><div class="sub">${esc(ev.dates)}</div></header>
+<div class="card">
+  <div class="sent">
+    <div>📧 Check your email. We sent next steps for <b>${esc(f.youth)}</b> to:</div>
+    <div class="addr">${esc(r.masked)}</div>
+    <div class="note">${f.adult
+      ? 'The link opens a page where you review your medical and emergency information and sign the official Church form. It takes about a minute.'
+      : `The link opens a page where you review ${first}'s medical and emergency information, then you and ${first} both sign the official Church form. It takes about a minute.`}</div>
+  </div>
+  <p class="note">Nothing in a few minutes? Check spam or promotions, or contact ${esc(leaderWho)}.</p>
+  <button id="again" style="background:#fff;color:var(--accent);border:1px solid var(--accent)">Sign up someone else</button>
+</div>`;
+  window.scrollTo(0, 0);
+  $('#again').addEventListener('click', renderForm);
+}
+
+renderForm();
+
+};
+
+PAGES.Sign = function (M) {
+const P = Object.assign({}, M.profile);
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const changedTag = '<span class="changed-tag hidden">changed</span>';
+
+function yn(key, question, detailKey, detailLabel) {
+  return `<div class="q" data-k="${key}"><div>${question} ${changedTag}</div>
+    <div class="yn">
+      <label><input type="radio" name="${key}" value="Yes" ${P[key]==='Yes'?'checked':''}><span>Yes</span></label>
+      <label><input type="radio" name="${key}" value="No" ${P[key]==='No'?'checked':''}><span>No</span></label>
+    </div>
+    ${detailKey ? `<div class="detail ${P[key]==='Yes'?'':'hidden'}" data-for="${key}" data-k="${detailKey}">
+      <label class="f">${detailLabel}</label><input type="text" name="${detailKey}" value="${esc(P[detailKey])}"></div>` : ''}
+  </div>`;
+}
+function txt(key, label, area) {
+  return `<div class="full" data-k="${key}"><label class="f">${label} ${changedTag}</label>
+    ${area ? `<textarea name="${key}">${esc(P[key])}</textarea>` : `<input type="text" name="${key}" value="${esc(P[key])}">`}</div>`;
+}
+
+const ev = M.event, y = M.youth, A = M.adult, who = esc(y.first || y.name.split(' ')[0]);
+// Directory fields the family can correct; edits update the stake directory too.
+const DIR = { DOB: y.dob, Address: y.address, City: y.city, State: y.state, Zip: y.zip, Phone: y.phone, Email: y.email };
+const dirIn = (k, label, type, cls) => `<div class="${cls || ''}" data-k="${k}"><label class="f">${label} ${changedTag}</label>
+  <input type="${type || 'text'}" name="${k}" value="${esc(DIR[k])}"></div>`;
+const leaderWho = (ev.leader || 'the activity leader') +
+  ([ev.leaderEmail, ev.leaderPhone].filter(Boolean).length ? ' (' + [ev.leaderEmail, ev.leaderPhone].filter(Boolean).join(', ') + ')' : '');
+$('#app').innerHTML = `
+<header>
+  <h1>${esc(ev.name)}</h1>
+  <div class="sub">${esc(ev.dates)} · Permission for <b>${esc(y.name)}</b></div>
+  ${M.testMode ? '<div class="test">Prototype / test mode — not a real sign-up.</div>' : ''}
+</header>
+${M.unverified ? `<div class="handoff" style="background:var(--warn);font-size:15px">
+  ⚠️ <b>${A ? 'Your email or information does not match Church records' : "Your email or your child's information does not match Church records"},</b>
+  so we can't show the information we have on file. Please fill in the form below — we'll keep it for next time.<br><br>
+  <b>If this is a mistake,</b> go back to the sign-up page and check the name, birth date, and the email that's in the
+  Church directory on Tools:<br><a href="${esc(M.startLink)}" target="_top">${esc(M.startLink)}</a></div>` : ''}
+
+<div class="card">
+  <h2><span class="step">1</span>The event</h2>
+  <details><summary>Read the full event details</summary><pre class="long">${esc(ev.long)}</pre></details>
+</div>
+
+<div class="card">
+  <h2><span class="step">2</span>Contact information</h2>
+  <div class="grid">
+    <div><label class="f">Participant</label><div class="ro">${esc(y.name)}</div></div>
+    ${dirIn('DOB', 'Date of birth' + (A && !y.dob ? ' (needed for the Church form)' : ''), 'date')}
+    ${dirIn('Address', 'Street address', 'text', 'full')}
+    ${dirIn('City', 'City')}
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">${dirIn('State', 'State')}${dirIn('Zip', 'ZIP')}</div>
+    ${dirIn('Phone', 'Telephone number')}
+    ${A ? dirIn('Email', 'Email', 'email') : '<div></div>'}
+    ${txt('EmergencyName', A ? 'Emergency contact' : 'Emergency contact (parent or guardian)')}
+    <div data-k="EmergencyPrimary"><label class="f">Primary phone ${changedTag}</label><input type="text" name="EmergencyPrimary" value="${esc(P.EmergencyPrimary)}"></div>
+    <div data-k="EmergencySecondary"><label class="f">Secondary phone ${changedTag}</label><input type="text" name="EmergencySecondary" value="${esc(P.EmergencySecondary)}"></div>
+  </div>
+  <p class="note">Please correct anything that's out of date — your changes update our stake records for future events. (Let your ward clerk know too, so Church records match.)</p>
+</div>
+
+<div class="card">
+  <h2><span class="step">3</span>Medical information</h2>
+  <p class="note" style="margin-top:0">${M.hasProfile ? 'This is what we have on file. Please update anything that has changed.' : 'We don\'t have medical information on file yet — you\'ll only need to do this once.'}</p>
+  ${yn('Diet', A ? 'Do you require a special diet?' : `Does ${who} require a special diet?`,'DietDetail','Dietary restrictions')}
+  ${yn('Allergies', A ? 'Do you have any allergies?' : `Does ${who} have any allergies?`,'AllergyDetail','List the allergies')}
+  <div class="q" data-k="Medications"><label class="f">Prescription or over-the-counter medications ${A ? 'you are' : who + ' is'} taking (leave blank if none) ${changedTag}</label>
+    <textarea name="Medications">${esc(P.Medications)}</textarea></div>
+  <div id="selfAdminWrap" class="${P.Medications?'':'hidden'}">${yn('SelfAdmin', (A ? 'Can you self-administer your medication?' : `Can ${who} self-administer the medication?`) + ' (If no, please also contact ' + esc(leaderWho) + ' directly.)')}</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">4</span>Conditions that limit activity</h2>
+  ${yn('Chronic', A ? 'Do you have a chronic or recurring illness?' : `Does ${who} have a chronic or recurring illness?`,'ChronicDetail','Please explain')}
+  ${yn('Surgery', A ? 'Have you had surgery or a serious illness in the past year?' : `Has ${who} had surgery or a serious illness in the past year?`,'SurgeryDetail','Please explain')}
+  <div class="q">${txt('Limitations', 'Any other limits, restrictions, or disabilities that could prevent ' + (A ? 'you' : who) + ' from fully participating?',true)}</div>
+  <div class="q">${txt('Accommodations','Other accommodations or special needs the leaders should know about',true)}</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">5</span>Permission &amp; signatures</h2>
+  <div class="perm">
+    <p>I give permission for my child or youth to participate in the event and activities listed above (unless noted) and authorize the adult leaders supervising this event to administer emergency treatment to the above-named participant for any accident or illness and to act in my stead in approving necessary medical care. This authorization shall cover this event and travel to and from this event.</p>
+    <p><i>Please note:</i> Units may not have the ability to meet all medical, physical, and other accommodations and are asked to counsel with parents or guardians on what is possible.</p>
+    <p>The participant is responsible for his or her own conduct and is aware of and agrees to abide by Church standards, camp or event safety rules, and other pertinent instructions. The participant's conduct and interactions should abide by Church standards and exemplify Christlike behavior, including those listed on the attached "Conduct at Church Activities."</p>
+    <p>Parents and participants should understand that participation in an activity is not a right but a privilege that can be revoked if participants behave inappropriately or if they pose a risk to themselves or others.</p>
+    <p style="margin:0">This information is collected to help event and activity leaders or medical personnel so they can be prepared and appropriately respond to health concerns or an emergency. It will be kept confidential and shared only as needed.</p>
+  </div>
+  <p class="note">Official form: <a href="${esc(M.formUrl)}" target="_blank">Permission and Medical Release Form</a> (page 2: Conduct at Church Activities). Your answers fill in this exact form.</p>
+
+  ${A ? `
+  <label class="f">Your signature (type your full name)</label>
+  <input type="text" name="YouthSig" autocomplete="off" placeholder="${esc(y.name)}">
+  <p class="note">You're signing as an adult participant, so no parent or guardian signature is needed.</p>
+  <label class="check" style="margin-top:10px"><input type="checkbox" id="consent"><span>I agree that typing my name above is my electronic signature on the Church Permission and Medical Release Form for the event described above, and that the information on this page is accurate.</span></label>` : `
+  <div class="handoff">👦 <b>Now hand the phone or computer to ${who}.</b><br>
+    ${who}: read the paragraphs above about your conduct at Church activities, then type your full name to show you agree.</div>
+  <label class="f">Participant's signature (type full name)</label>
+  <input type="text" name="YouthSig" autocomplete="off" placeholder="${esc(y.name)}">
+
+  <div class="handoff" style="margin-top:16px">👨‍👩‍👦 <b>Hand it back to the parent or guardian</b> to finish.</div>
+  <label class="f">Parent or guardian's signature (type full name)</label>
+  <input type="text" name="ParentSig" autocomplete="off" placeholder="${esc(M.parentName)}">
+  <label class="check" style="margin-top:10px"><input type="checkbox" id="consent"><span>We agree that typing our names above constitutes our electronic signatures on the Church Permission and Medical Release Form for the event described above, and that the information on this page is accurate.</span></label>`}
+
+  <div class="err" id="err"></div>
+  <button id="go">Sign and submit</button>
+</div>
+`;
+
+// Show/hide detail boxes and highlight edits vs what's on file
+document.querySelectorAll('.yn input').forEach(r => r.addEventListener('change', () => {
+  const d = document.querySelector(`.detail[data-for="${r.name}"]`);
+  if (d) d.classList.toggle('hidden', r.value !== 'Yes');
+  markChanges();
+}));
+document.querySelectorAll('input[type=text], input[type=email], input[type=date], textarea').forEach(i => i.addEventListener('input', markChanges));
+markChanges();
+$('[name=Medications]').addEventListener('input', e => $('#selfAdminWrap').classList.toggle('hidden', !e.target.value.trim()));
+
+function val(name) {
+  const r = document.querySelector(`input[name="${name}"]:checked`);
+  if (r) return r.value;
+  const t = document.querySelector(`[name="${name}"]:not([type=radio])`);
+  return t ? t.value.trim() : '';
+}
+function markChanges() {
+  // highlight edits vs what's on file (always for directory fields; medical only if we had a profile)
+  document.querySelectorAll('[data-k]').forEach(el => {
+    const k = el.dataset.k;
+    if (!(k in DIR) && !M.hasProfile) return;
+    const orig = k in DIR ? DIR[k] : P[k];
+    const ch = String(val(k)) !== String(orig || '');
+    el.classList.toggle('changed', ch);
+    const tag = el.querySelector('.changed-tag'); if (tag) tag.classList.toggle('hidden', !ch);
+  });
+}
+
+$('#go').addEventListener('click', () => {
+  const f = {};
+  ['DOB','Address','City','State','Zip','Phone','Email','EmergencyName','EmergencyPrimary','EmergencySecondary','Diet','DietDetail','Allergies','AllergyDetail',
+   'Medications','SelfAdmin','Chronic','ChronicDetail','Surgery','SurgeryDetail','Limitations','Accommodations',
+   'YouthSig','ParentSig'].forEach(k => f[k] = val(k));
+  ['Diet','Allergies','Chronic','Surgery'].forEach(k => { if (f[k] === 'No') f[k + 'Detail'] = ''; });
+  if (!f.Medications) f.SelfAdmin = '';
+  f.Consent = $('#consent').checked;
+  $('#err').textContent = '';
+  const btn = $('#go'); btn.disabled = true; btn.textContent = 'Submitting…';
+  google.script.run
+    .withSuccessHandler(r => {
+      $('#app').innerHTML = `<div class="card done"><h1>✅ All set!</h1>
+        <p>${esc(y.name)} is signed up for <b>${esc(ev.name)}</b>.</p>
+        <p class="note">A copy of the completed Church Permission and Medical Release Form will arrive at <b>${esc(r.email)}</b> in a minute or two.</p></div>`;
+      window.scrollTo(0, 0);
+    })
+    .withFailureHandler(e => {
+      $('#err').textContent = (e && e.message || String(e)).replace(/^Error:\s*/, '');
+      btn.disabled = false; btn.textContent = 'Sign and submit';
+    })
+    .submitSignature(M.token, f);
+});
+
+};
+
+PAGES.Lead = function (M) {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function render() {
+  $('#app').innerHTML = `
+<header>
+  <h1>Plan a new event or activity</h1>
+  <div class="sub">${esc(M.stake)} · for activity leaders</div>
+  ${M.testMode ? '<div class="test">Prototype / test mode — use your own email. You will also receive the approver\'s email so you can try every step.</div>' : ''}
+</header>
+
+<div class="card">
+  <h2>How it works</h2>
+  <p style="margin-top:0">1. Tell us who you are (this page). 2. We email you a private link to fill in the Church <b>Event and Activity Plan</b>.
+  3. As soon as you submit it, you get the parent sign-up link and a shared Google Drive folder where every signed permission form lands.
+  4. The plan also goes to the bishop (ward events) or stake president (stake events) to approve and sign — you don't need to wait for it.</p>
+</div>
+
+<div class="card">
+  <h2><span class="step">1</span>About you</h2>
+  <div class="grid">
+    <div class="full field"><label class="f">Your full name</label><input type="text" name="name" autocomplete="name"></div>
+    <div class="field"><label class="f">Email</label><input type="email" name="email" autocomplete="email"></div>
+    <div class="field"><label class="f">Phone</label><input type="text" name="phone" autocomplete="tel" placeholder="801-555-1234"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="step">2</span>The event</h2>
+  <div class="q"><div>Is this a ward or a stake event?</div>
+    <div class="yn">
+      <label><input type="radio" name="level" value="ward" checked><span>Ward or branch</span></label>
+      <label><input type="radio" name="level" value="stake"><span>Stake</span></label>
+    </div>
+    <div class="note" id="approverNote"></div>
+  </div>
+  <div class="grid">
+    <div class="field"><label class="f">Organization</label>
+      <select name="organization" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff">
+        <option value="">Choose…</option>${M.orgs.map(o => `<option>${esc(o)}</option>`).join('')}</select></div>
+    <div class="field" id="wardWrap"><label class="f">Ward or branch</label><input type="text" name="ward"></div>
+    <div class="full field"><label class="f">Event name</label><input type="text" name="eventName" placeholder="e.g. Kolob Arch Backpacking Campout"></div>
+    <div class="full field"><label class="f">Leaders' Google account emails (comma-separated)</label>
+      <input type="text" name="leaderAccounts" placeholder="you@gmail.com, other.leader@gmail.com">
+      <div class="hint">These accounts get access to this event's Google Drive folder (plan, roster, signed forms) — and only this event's folder.</div></div>
+  </div>
+  <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+  <div class="err" id="err"></div>
+  <button id="go">Email me the planning link</button>
+</div>`;
+  document.querySelectorAll('[name=level]').forEach(r => r.addEventListener('change', level));
+  level();
+  $('#go').addEventListener('click', submit);
+  $('[name=email]').addEventListener('change', e => { const la = $('[name=leaderAccounts]'); if (!la.value.trim()) la.value = e.target.value.trim(); });
+}
+
+function level() {
+  const stake = document.querySelector('[name=level]:checked').value === 'stake';
+  $('#wardWrap').classList.toggle('hidden', stake);
+  $('#approverNote').textContent = stake
+    ? `Approved by the ${M.stakeApprover.title.toLowerCase()} (${M.stakeApprover.name}). No bishop approval needed.`
+    : 'Approved by your bishop. You\'ll enter his name and email on the plan.';
+}
+
+function submit() {
+  const f = {};
+  ['name', 'email', 'phone', 'organization', 'ward', 'eventName', 'leaderAccounts', 'website'].forEach(k => f[k] = ($(`[name=${k}]`).value || '').trim());
+  if (!f.leaderAccounts) f.leaderAccounts = f.email;
+  f.level = document.querySelector('[name=level]:checked').value;
+  const err = $('#err'); err.textContent = '';
+  const miss = f.name.length < 3 ? 'Please enter your full name.'
+    : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email) ? 'Please enter a valid email address.'
+    : f.phone.replace(/\D/g, '').length < 10 ? 'Please enter a phone number.'
+    : !f.organization ? 'Please choose your organization.'
+    : f.level === 'ward' && !f.ward ? 'Please enter your ward or branch.'
+    : f.eventName.length < 3 ? 'Please give the event a name.' : '';
+  if (miss) { err.textContent = miss; return; }
+  const btn = $('#go'); btn.disabled = true; btn.textContent = 'Sending…';
+  google.script.run
+    .withSuccessHandler(r => {
+      $('#app').innerHTML = `<header><h1>Check your email</h1></header>
+        <div class="card"><div class="sent"><div>📧 We sent your private planning link for <b>${esc(f.eventName)}</b> to:</div>
+        <div class="addr">${esc(r.masked)}</div>
+        <div class="note">Open it to fill in the Event and Activity Plan. You can come back to the same link to make changes until it is approved.</div></div>
+        <p class="note">Nothing in a few minutes? Check spam or promotions.</p></div>`;
+      window.scrollTo(0, 0);
+    })
+    .withFailureHandler(e => { err.textContent = (e && e.message || String(e)).replace(/^Error:\s*/, ''); btn.disabled = false; btn.textContent = 'Email me the planning link'; })
+    .leadIntake(f);
+}
+render();
+
+};
+
+PAGES.Plan = function (M) {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const I = M.intake || {};
+// Saved plan wins; otherwise pre-fill from the leader intake.
+const P = Object.assign({
+  eventName: I.eventName, level: I.level || 'ward', organization: I.organization, ward: I.ward,
+  leaders: I.name, phone: I.phone, funds: [], leaderAccounts: I.leaderAccounts || [],
+}, M.plan || {});
+
+const inp = (k, label, ph, cls) => `<div class="${cls || 'full'} field"><label class="f">${label}</label>
+  <input type="text" name="${k}" value="${esc(P[k])}" placeholder="${esc(ph || '')}"></div>`;
+const area = (k, label, ph, max) => `<div class="full field"><label class="f">${label}</label>
+  <textarea name="${k}" ${max ? `maxlength="${max}"` : ''} placeholder="${esc(ph || '')}">${esc(P[k])}</textarea>
+  ${max ? `<div class="hint" data-count="${k}"></div>` : ''}</div>`;
+const yn = (k, q) => `<div class="q"><div>${q}</div><div class="yn">
+  <label><input type="radio" name="${k}" value="Yes" ${P[k] === 'Yes' ? 'checked' : ''}><span>Yes</span></label>
+  <label><input type="radio" name="${k}" value="No" ${P[k] === 'No' ? 'checked' : ''}><span>No</span></label></div></div>`;
+const fund = (v, label) => `<label class="check"><input type="checkbox" name="funds" value="${v}" ${(P.funds || []).includes(v) ? 'checked' : ''}><span>${label}</span></label>`;
+
+const banner = {
+  'Awaiting approval': `<div class="handoff">✅ Submitted — sign-ups are open: <a href="${esc(M.parentLink)}" target="_top">${esc(M.parentLink)}</a><br>Approval is still pending. You can change the plan here; resubmitting sends the approver the updated plan.</div>`,
+  'Returned': `<div class="handoff" style="background:var(--warn)">↩️ <b>Changes requested:</b> ${esc(M.note)}<br>Update the plan below and submit it again.</div>`,
+}[M.status] || '';
+
+$('#app').innerHTML = `
+<header>
+  <h1>Event and Activity Plan</h1>
+  <div class="sub">${esc(M.stake)} · fills in the official Church form</div>
+  ${M.testMode ? '<div class="test">Prototype / test mode — approval emails come to you so you can try both roles.</div>' : ''}
+</header>
+${banner}
+
+<div class="card">
+  <h2><span class="step">1</span>Event information</h2>
+  <div class="grid">
+    ${inp('eventName', 'Event name', 'Kolob Arch Backpacking Campout')}
+    ${inp('location', 'Location of event', 'Kolob Arch, Zion National Park')}
+    <div class="field"><label class="f">Start date</label><input type="date" name="startDate" value="${esc(P.startDate)}"></div>
+    <div class="field"><label class="f">End date</label><input type="date" name="endDate" value="${esc(P.endDate)}"></div>
+    ${area('description', 'Describe the event and activities (please be specific)', 'Schedule, activities, higher-risk activities, overnight details…', 800)}
+    ${area('purpose', 'Describe the gospel-centered purpose of the event and activities', '', 450)}
+    ${inp('specialNeeds', 'Special needs of participants', 'e.g. cold weather; long hike; individual needs on each permission form')}
+    ${inp('cost', 'Estimated cost', '$250', 'h')}
+    <div class="field"><label class="f">Source of funds (select all that apply)</label>
+      ${fund('Budget', 'Budget allowance')}${fund('fundRaiser', 'Annual fund-raiser')}${fund('Other', 'Other')}
+      <input type="text" name="fundsOther" value="${esc(P.fundsOther)}" placeholder="Other source (e.g. Stake YM)"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="step">2</span>Administration</h2>
+  <div class="q"><div>Ward or stake event?</div><div class="yn">
+    <label><input type="radio" name="level" value="ward" ${P.level !== 'stake' ? 'checked' : ''}><span>Ward or branch</span></label>
+    <label><input type="radio" name="level" value="stake" ${P.level === 'stake' ? 'checked' : ''}><span>Stake</span></label></div></div>
+  <div class="grid">
+    <div class="field"><label class="f">Organization</label>
+      <select name="organization" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff">
+      <option value="">Choose…</option>${M.orgs.map(o => `<option ${o === P.organization ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>
+    <div class="field" id="wardWrap"><label class="f">Ward or branch</label><input type="text" name="ward" value="${esc(P.ward)}"></div>
+    ${inp('leaders', 'Event or activity leader(s)', '', 'h')}
+    ${inp('phone', 'Telephone number(s)', '801-555-1234', 'h')}
+    ${inp('chaperones', 'Other supervisors or chaperones', 'Names, separated by commas')}
+    <div class="full field"><label class="f">Leaders' Google account emails (comma-separated)</label>
+      <input type="text" name="leaderAccounts" value="${esc([].concat(P.leaderAccounts || []).join(', '))}" placeholder="you@gmail.com, other.leader@gmail.com">
+      <div class="hint">These accounts get access to this event's Google Drive folder only. To add someone later, update this and resubmit (or ask the stake to add them).</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="step">3</span>Transportation</h2>
+  <div class="grid">${inp('drivers', "Private vehicles — drivers' names", 'Names, separated by commas (leave blank if none)')}</div>
+  <div id="driverQs">
+    ${yn('vehicleSound', 'Is each vehicle in sound operating condition?')}
+    ${yn('driverLicensedAdult', 'Is each driver a licensed, responsible adult?')}
+    ${yn('driverInsurance', 'Do vehicles and drivers have reasonable amounts of vehicle liability insurance?')}
+  </div>
+  <div class="grid">${inp('busCompany', 'Commercial transportation — bus company name', 'Leave blank if none')}</div>
+  <div id="busQ">${yn('busLicensed', 'Is the company currently licensed and insured as a passenger carrier?')}</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">4</span>Itinerary</h2>
+  <div class="grid">
+    ${inp('travelFrom', 'Travel from', '', 'h')}
+    ${inp('travelTo', 'Travel to', '', 'h')}
+    ${inp('travelDate', 'Date(s)', 'Nov 13–14, 2026', 'h')}
+    ${inp('miles', 'Miles or kilometers (one way)', 'About 50 miles', 'h')}
+    ${inp('meals', 'Number of meals being planned', '', 'h')}
+    ${inp('lodgingPhone', 'Lodging telephone number', 'N/A', 'h')}
+    ${inp('lodging', 'Lodging facility')}
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="step">5</span>What parents will see</h2>
+  <p class="note" style="margin-top:0">Shown on the parent sign-up page and on each signed permission form. Leave blank to use your description above.</p>
+  <div class="grid">
+    ${inp('summary', 'One-line summary (fits on the permission form)', 'Overnight backpacking trip to Kolob Arch, Zion NP')}
+    ${area('parentDetails', 'Full details for parents', 'Schedule, meeting place and time, what to bring, cost, contact info…')}
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="step">6</span>Approval &amp; signature</h2>
+  <div id="bishopWrap" class="grid">
+    ${inp('bishopName', "Bishop's name", 'Bishop Kurt Palmer', 'h')}
+    <div class="field"><label class="f">Bishop's email</label><input type="email" name="bishopEmail" value="${esc(P.bishopEmail)}"></div>
+  </div>
+  <p class="note" id="approverNote"></p>
+  <label class="f">Event leader's signature (type your full name)</label>
+  <input type="text" name="leaderSig" autocomplete="off" value="${esc(P.leaderSig)}" placeholder="${esc(I.name || '')}">
+  <label class="check" style="margin-top:10px"><input type="checkbox" id="consent"><span>I am the event leader. Typing my name above is my electronic signature on this Church Event and Activity Plan, and the information is accurate.</span></label>
+  <div class="err" id="err"></div>
+  <button id="go">${M.status === 'Draft' ? 'Sign and submit' : 'Sign and resubmit'}</button>
+</div>`;
+
+function sync() {
+  const stake = document.querySelector('[name=level]:checked').value === 'stake';
+  $('#wardWrap').classList.toggle('hidden', stake);
+  $('#bishopWrap').classList.toggle('hidden', stake);
+  $('#approverNote').textContent = stake
+    ? `Goes to the ${M.stakeApprover.title.toLowerCase()} (${M.stakeApprover.name}) for approval. No bishop approval needed.`
+    : 'Goes to the bishop above for approval.' + (M.testMode ? ' (Test mode: the approval email comes to you.)' : '');
+  $('#driverQs').classList.toggle('hidden', !$('[name=drivers]').value.trim());
+  $('#busQ').classList.toggle('hidden', !$('[name=busCompany]').value.trim());
+  document.querySelectorAll('[data-count]').forEach(h => {
+    const t = $(`[name=${h.dataset.count}]`); h.textContent = `${t.value.length} / ${t.maxLength} characters (fits on the Church form)`;
+  });
+}
+document.querySelectorAll('input, textarea, select').forEach(el => el.addEventListener('input', sync));
+document.querySelectorAll('[name=level]').forEach(el => el.addEventListener('change', sync));
+sync();
+
+function val(k) {
+  const r = document.querySelector(`input[name="${k}"]:checked`);
+  if (r && r.type === 'radio') return r.value;
+  const t = document.querySelector(`[name="${k}"]:not([type=radio])`);
+  return t ? t.value.trim() : '';
+}
+$('#go').addEventListener('click', () => {
+  const f = {};
+  ['eventName', 'location', 'startDate', 'endDate', 'description', 'purpose', 'specialNeeds', 'cost', 'fundsOther',
+   'level', 'organization', 'ward', 'leaders', 'phone', 'chaperones', 'drivers', 'vehicleSound', 'driverLicensedAdult',
+   'driverInsurance', 'busCompany', 'busLicensed', 'travelTo', 'travelFrom', 'travelDate', 'miles',
+   'meals', 'lodging', 'lodgingPhone', 'summary', 'parentDetails', 'bishopName', 'bishopEmail', 'leaderSig', 'leaderAccounts'].forEach(k => f[k] = val(k));
+  f.funds = [...document.querySelectorAll('[name=funds]:checked')].map(i => i.value);
+  f.consent = $('#consent').checked;
+  const err = $('#err'); err.textContent = '';
+  const btn = $('#go'), label = btn.textContent; btn.disabled = true; btn.textContent = 'Submitting…';
+  google.script.run
+    .withSuccessHandler(r => {
+      $('#app').innerHTML = `<header><h1>Submitted — sign-ups are open</h1></header>
+        <div class="card"><div class="sent">
+          <div>✅ <b>${esc(f.eventName)}</b> is set up. In a minute or two you'll get an email with the <b>parent sign-up link</b>, your shared event folder, and the leader roster.</div>
+          <p class="note">The plan also went to ${esc(r.approverTitle)} ${esc(r.approverName)} for approval${r.testMode ? ' (test mode: that email is coming to you)' : ''}. You don't need to wait for it.</p></div>
+          <p class="note">Need to change something? Use the same planning link from your email.</p></div>`;
+      window.scrollTo(0, 0);
+    })
+    .withFailureHandler(e => { err.textContent = (e && e.message || String(e)).replace(/^Error:\s*/, ''); btn.disabled = false; btn.textContent = label; })
+    .submitPlan(M.token, f);
+});
+
+};
+
+PAGES.Approve = function (M) {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p = M.plan;
+
+$('#app').innerHTML = `
+<header>
+  <h1>${esc(p.eventName)}</h1>
+  <div class="sub">Event and Activity Plan · approval by ${esc(M.approver.title.toLowerCase())}</div>
+  ${M.testMode ? '<div class="test">Prototype / test mode — you are playing the approver. Nothing here is a real approval.</div>' : ''}
+</header>
+
+<div class="card"><h2>The plan</h2>
+  <pre class="long" style="margin:0">${esc(M.planText)}</pre>
+  <p class="note">The filled-in Church Event and Activity Plan is attached to the email that brought you here.</p></div>
+
+<div class="card"><h2>Your decision</h2>
+  <label class="f">Comments for the leader (optional)</label>
+  <textarea name="note" placeholder="Any concerns or suggestions, e.g. Please add a second adult driver."></textarea>
+  <p class="note" style="margin-top:4px">The leader is emailed your decision and these comments either way.</p>
+  <label class="f" style="margin-top:12px">${esc(M.approver.title)}'s signature (type your full name to approve)</label>
+  <input type="text" name="name" autocomplete="off" placeholder="${esc(M.approver.name)}">
+  <label class="check" style="margin-top:10px"><input type="checkbox" id="consent"><span>Typing my name above is my electronic signature approving this Event and Activity Plan.</span></label>
+  <div class="err" id="err"></div>
+  <div class="two"><button id="ok">Approve</button><button id="back" class="alt">Return for changes</button></div>
+</div>`;
+
+function send(decision) {
+  const f = { decision: decision, name: $('[name=name]').value.trim(), note: $('[name=note]').value.trim(), consent: $('#consent').checked };
+  const err = $('#err'); err.textContent = '';
+  if (decision === 'approve' && f.name.length < 3) { err.textContent = 'Please type your full name to approve.'; return; }
+  if (decision === 'approve' && !f.consent) { err.textContent = 'Please check the box to sign electronically.'; return; }
+  document.querySelectorAll('button').forEach(b => b.disabled = true);
+  google.script.run
+    .withSuccessHandler(() => {
+      $('#app').innerHTML = decision === 'approve'
+        ? `<div class="card done"><h1>✅ Approved</h1><p>${esc(p.eventName)} is approved. The leader will be emailed the signed plan${f.note ? ' and your comments' : ''} in a minute or two.</p></div>`
+        : `<div class="card done"><h1>↩️ Returned</h1><p>We emailed the leader your decision${f.note ? ' and comments' : ''}, with a link to update and resubmit the plan.</p></div>`;
+      window.scrollTo(0, 0);
+    })
+    .withFailureHandler(e => { err.textContent = (e && e.message || String(e)).replace(/^Error:\s*/, ''); document.querySelectorAll('button').forEach(b => b.disabled = false); })
+    .submitApproval(M.token, f);
+}
+$('#ok').addEventListener('click', () => send('approve'));
+$('#back').addEventListener('click', () => send('return'));
+
+};
+
+(async function route() {
+  const app = document.getElementById('app');
+  const params = Object.fromEntries(new URLSearchParams(location.search));
+  try {
+    const r = await api('page', [params]);
+    if (r.message) { app.innerHTML = r.message; return; }
+    if (!PAGES[r.page]) throw new Error('Unknown page.');
+    PAGES[r.page](r.model);
+  } catch (e) {
+    app.innerHTML = '<div class="card" style="margin-top:40px"><h2>Something went wrong</h2><p>' +
+      String(e && e.message || e).replace(/[<>&]/g, '') + '</p><p class="note">Please try the link again in a minute.</p></div>';
+  }
+})();
+</script>
+</body>
+</html>
