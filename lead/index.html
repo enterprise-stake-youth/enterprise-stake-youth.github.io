@@ -102,8 +102,9 @@ PAGES.Start = function (M) {
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ev = M.event;
-const leaderWho = (ev.leader || 'the activity leader') +
-  ([ev.leaderEmail, ev.leaderPhone].filter(Boolean).length ? ' (' + [ev.leaderEmail, ev.leaderPhone].filter(Boolean).join(', ') + ')' : '');
+// Built on the server (leaderContact_): leader's name, email, phone, plus the stake youth email.
+const leaderWho = ev.contact || ((ev.leader || 'the activity leader') +
+  ([ev.leaderEmail, ev.leaderPhone].filter(Boolean).length ? ' (' + [ev.leaderEmail, ev.leaderPhone].filter(Boolean).join(', ') + ')' : ''));
 
 function ymd(s) { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
 function ageOn(b, d) {
@@ -250,8 +251,9 @@ const ev = M.event, y = M.youth, A = M.adult, who = esc(y.first || y.name.split(
 const DIR = { DOB: y.dob, Address: y.address, City: y.city, State: y.state, Zip: y.zip, Phone: y.phone, Email: y.email };
 const dirIn = (k, label, type, cls) => `<div class="${cls || ''}" data-k="${k}"><label class="f">${label} ${changedTag}</label>
   <input type="${type || 'text'}" name="${k}" value="${esc(DIR[k])}"></div>`;
-const leaderWho = (ev.leader || 'the activity leader') +
-  ([ev.leaderEmail, ev.leaderPhone].filter(Boolean).length ? ' (' + [ev.leaderEmail, ev.leaderPhone].filter(Boolean).join(', ') + ')' : '');
+// Built on the server (leaderContact_): leader's name, email, phone, plus the stake youth email.
+const leaderWho = ev.contact || ((ev.leader || 'the activity leader') +
+  ([ev.leaderEmail, ev.leaderPhone].filter(Boolean).length ? ' (' + [ev.leaderEmail, ev.leaderPhone].filter(Boolean).join(', ') + ')' : ''));
 $('#app').innerHTML = `
 <header>
   <h1>${esc(ev.name)}</h1>
