@@ -132,15 +132,15 @@ function renderForm() {
   <label class="check"><input type="checkbox" id="adult"><span>This participant is an <b>adult</b> (18 or older) signing up for themselves</span></label>
   <label class="check"><input type="checkbox" id="notInStake"><span>This participant is <b>not in the Enterprise Utah Stake</b> (new move-in, friend, nonmember, or from another stake)</span></label>
   <div class="grid">
-    <div class="full field"><label class="f">Participant's full name</label>
-      <input type="text" name="youth" autocomplete="off" placeholder="First and last name"></div>
+    <div class="full field"><label class="f">Participant's name</label>
+      <input type="text" name="youth" autocomplete="off" placeholder="First and last name (the name they go by is fine)"></div>
     <div class="field" id="dobWrap"><label class="f">Participant's date of birth</label>
       <input type="date" name="dob"><div class="hint" id="dobHint"></div></div>
     <div class="field" id="wardWrap"><label class="f">Ward or branch</label>
       <input type="text" name="ward"></div>
     <div class="field hidden" id="homeWrap"><label class="f">Home ward and stake (or "none")</label>
       <input type="text" name="homeUnit" placeholder="e.g. Cedar City 4th Ward, Cedar City Utah Stake"></div>
-    <div class="full field" id="parentWrap"><label class="f">Parent or guardian's full name</label>
+    <div class="full field" id="parentWrap"><label class="f">Parent or guardian's name</label>
       <input type="text" name="parent" autocomplete="name"></div>
     <div class="full field"><label class="f" id="emailLabel">Parent or guardian's email</label>
       <input type="email" name="email" autocomplete="email"></div>
@@ -189,7 +189,7 @@ function submit() {
     : !f.adult && !checkDob() ? 'Please check the date of birth.'
     : f.notInStake && !f.homeUnit ? 'Please enter the home ward and stake (or "none").'
     : !f.notInStake && !f.ward ? 'Please enter your ward or branch.'
-    : f.parent.length < 3 ? "Please enter the parent or guardian's full name."
+    : f.parent.length < 3 ? "Please enter the parent or guardian's name."
     : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email) ? 'Please enter a valid email address.' : '';
   if (miss) { err.textContent = miss; return; }
   const btn = $('#go'); btn.disabled = true; btn.textContent = 'Sending…';
@@ -413,7 +413,7 @@ function render() {
 <div class="card">
   <h2><span class="step">1</span>About you</h2>
   <div class="grid">
-    <div class="full field"><label class="f">Your full name</label><input type="text" name="name" autocomplete="name"></div>
+    <div class="full field"><label class="f">Your name</label><input type="text" name="name" autocomplete="name"></div>
     <div class="field"><label class="f">Email</label><input type="email" name="email" autocomplete="email"></div>
     <div class="field"><label class="f">Phone</label><input type="text" name="phone" autocomplete="tel" placeholder="801-555-1234"></div>
   </div>
@@ -473,7 +473,7 @@ function submit() {
   if (!f.leaderAccounts) f.leaderAccounts = f.email;
   f.level = document.querySelector('[name=level]:checked').value;
   const err = $('#err'); err.textContent = '';
-  const miss = f.name.length < 3 ? 'Please enter your full name.'
+  const miss = f.name.length < 3 ? 'Please enter your first and last name.'
     : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email) ? 'Please enter a valid email address.'
     : f.phone.replace(/\D/g, '').length < 10 ? 'Please enter a phone number.'
     : !f.organization ? 'Please choose your organization.'
