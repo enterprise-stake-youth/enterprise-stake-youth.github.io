@@ -584,7 +584,6 @@ ${banner}
   <div class="grid">
     ${inp('travelFrom', 'Travel from', '', 'h')}
     ${inp('travelTo', 'Travel to', '', 'h')}
-    ${inp('travelDate', 'Date(s)', 'Nov 13–14, 2026', 'h')}
     ${inp('miles', 'Miles or kilometers (one way)', 'About 50 miles', 'h')}
     ${inp('meals', 'Number of meals being planned', '', 'h')}
     ${inp('lodgingPhone', 'Lodging telephone number', 'N/A', 'h')}
@@ -645,7 +644,7 @@ $('#go').addEventListener('click', () => {
   const f = {};
   ['eventName', 'location', 'startDate', 'endDate', 'description', 'purpose', 'specialNeeds', 'cost', 'fundsOther',
    'level', 'organization', 'ward', 'leaders', 'phone', 'chaperones', 'drivers', 'vehicleSound', 'driverLicensedAdult',
-   'driverInsurance', 'busCompany', 'busLicensed', 'travelTo', 'travelFrom', 'travelDate', 'miles',
+   'driverInsurance', 'busCompany', 'busLicensed', 'travelTo', 'travelFrom', 'miles',
    'meals', 'lodging', 'lodgingPhone', 'summary', 'parentDetails', 'approverName', 'approverEmail', 'leaderSig', 'leaderAccounts'].forEach(k => f[k] = val(k));
   f.funds = [...document.querySelectorAll('[name=funds]:checked')].map(i => i.value);
   f.consent = $('#consent').checked;
