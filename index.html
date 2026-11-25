@@ -434,6 +434,8 @@ function render() {
     <div class="full field"><label class="f">Leaders' Google account emails (comma-separated)</label>
       <input type="text" name="leaderAccounts" placeholder="you@gmail.com, other.leader@gmail.com">
       <div class="hint">These accounts get access to this event's Google Drive folder (plan, roster, signed forms) — and only this event's folder.</div></div>
+    <div class="field"><label class="f" id="approverNameLabel">Bishop's name</label><input type="text" name="approverName"></div>
+    <div class="field" id="approverEmailWrap"><label class="f" id="approverEmailLabel">Bishop's email</label><input type="email" name="approverEmail"></div>
   </div>
   <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
   <div class="err" id="err"></div>
@@ -449,13 +451,22 @@ function level() {
   const stake = document.querySelector('[name=level]:checked').value === 'stake';
   $('#wardWrap').classList.toggle('hidden', stake);
   $('#approverNote').textContent = stake
-    ? `Approved by the ${M.stakeApprover.title.toLowerCase()} (${M.stakeApprover.name}). No bishop approval needed.`
-    : 'Approved by your bishop. You\'ll enter his name and email on the plan.';
+    ? 'The stake president approves the activity plan. No bishop approval needed.'
+    : 'Your bishop approves the activity plan.';
+  const who = stake ? 'Stake president' : 'Bishop';
+  $('#approverNameLabel').textContent = who + "'s name";
+  $('#approverEmailLabel').textContent = who + "'s email (the approval request goes here)";
+  const nm = $('[name=approverName]'), em = $('[name=approverEmail]');
+  if (stake && !nm.value.trim()) { nm.value = M.stakeApprover.name || ''; nm.dataset.auto = '1'; }
+  const onFile = stake && M.stakeApprover.hasEmail;                 // stake president's email is on file
+  $('#approverEmailWrap').classList.toggle('hidden', onFile);
+  if (onFile) $('#approverNote').textContent += ' His email is on file.';
+  if (!stake) [nm, em].forEach(i => { if (i.dataset.auto) { i.value = ''; delete i.dataset.auto; } });
 }
 
 function submit() {
   const f = {};
-  ['name', 'email', 'phone', 'organization', 'ward', 'eventName', 'leaderAccounts', 'website'].forEach(k => f[k] = ($(`[name=${k}]`).value || '').trim());
+  ['name', 'email', 'phone', 'organization', 'ward', 'eventName', 'leaderAccounts', 'approverName', 'approverEmail', 'website'].forEach(k => f[k] = ($(`[name=${k}]`).value || '').trim());
   if (!f.leaderAccounts) f.leaderAccounts = f.email;
   f.level = document.querySelector('[name=level]:checked').value;
   const err = $('#err'); err.textContent = '';
@@ -464,7 +475,9 @@ function submit() {
     : f.phone.replace(/\D/g, '').length < 10 ? 'Please enter a phone number.'
     : !f.organization ? 'Please choose your organization.'
     : f.level === 'ward' && !f.ward ? 'Please enter your ward or branch.'
-    : f.eventName.length < 3 ? 'Please give the event a name.' : '';
+    : f.eventName.length < 3 ? 'Please give the event a name.'
+    : !f.approverName || (!(f.level === 'stake' && M.stakeApprover.hasEmail) && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.approverEmail))
+      ? 'Please enter the ' + (f.level === 'stake' ? "stake president's" : "bishop's") + ' name and email.' : '';
   if (miss) { err.textContent = miss; return; }
   const btn = $('#go'); btn.disabled = true; btn.textContent = 'Sending…';
   google.script.run
@@ -491,6 +504,7 @@ const I = M.intake || {};
 const P = Object.assign({
   eventName: I.eventName, level: I.level || 'ward', organization: I.organization, ward: I.ward,
   leaders: I.name, phone: I.phone, funds: [], leaderAccounts: I.leaderAccounts || [],
+  approverName: I.approverName, approverEmail: I.approverEmail,
 }, M.plan || {});
 
 const inp = (k, label, ph, cls) => `<div class="${cls || 'full'} field"><label class="f">${label}</label>
@@ -588,9 +602,9 @@ ${banner}
 
 <div class="card">
   <h2><span class="step">6</span>Approval &amp; signature</h2>
-  <div id="bishopWrap" class="grid">
-    ${inp('bishopName', "Bishop's name", 'Bishop Kurt Palmer', 'h')}
-    <div class="field"><label class="f">Bishop's email</label><input type="email" name="bishopEmail" value="${esc(P.bishopEmail)}"></div>
+  <div class="grid">
+    <div class="field"><label class="f" id="approverNameLabel">Bishop's name</label><input type="text" name="approverName" value="${esc(P.approverName || P.bishopName)}"></div>
+    <div class="field" id="approverEmailWrap"><label class="f" id="approverEmailLabel">Bishop's email</label><input type="email" name="approverEmail" value="${esc(P.level === 'stake' ? '' : (P.approverEmail || P.bishopEmail))}"></div>
   </div>
   <p class="note" id="approverNote"></p>
   <label class="f">Event leader's signature (type your full name)</label>
@@ -603,10 +617,13 @@ ${banner}
 function sync() {
   const stake = document.querySelector('[name=level]:checked').value === 'stake';
   $('#wardWrap').classList.toggle('hidden', stake);
-  $('#bishopWrap').classList.toggle('hidden', stake);
-  $('#approverNote').textContent = stake
-    ? `Goes to the ${M.stakeApprover.title.toLowerCase()} (${M.stakeApprover.name}) for approval. No bishop approval needed.`
-    : 'Goes to the bishop above for approval.' + (M.testMode ? ' (Test mode: the approval email comes to you.)' : '');
+  const who = stake ? 'Stake president' : 'Bishop';
+  $('#approverNameLabel').textContent = who + "'s name";
+  $('#approverEmailLabel').textContent = who + "'s email";
+  if (stake && !$('[name=approverName]').value.trim()) $('[name=approverName]').value = M.stakeApprover.name || '';
+  $('#approverEmailWrap').classList.toggle('hidden', stake && M.stakeApprover.hasEmail);   // on file; not shown on public pages
+  $('#approverNote').textContent = 'The activity plan goes to the ' + who.toLowerCase() + ' above for approval.' +
+    (stake ? ' No bishop approval needed.' : '') + (M.testMode ? ' (Test mode: the approval email comes to you instead.)' : '');
   $('#driverQs').classList.toggle('hidden', !$('[name=drivers]').value.trim());
   $('#busQ').classList.toggle('hidden', !$('[name=busCompany]').value.trim());
   document.querySelectorAll('[data-count]').forEach(h => {
@@ -628,7 +645,7 @@ $('#go').addEventListener('click', () => {
   ['eventName', 'location', 'startDate', 'endDate', 'description', 'purpose', 'specialNeeds', 'cost', 'fundsOther',
    'level', 'organization', 'ward', 'leaders', 'phone', 'chaperones', 'drivers', 'vehicleSound', 'driverLicensedAdult',
    'driverInsurance', 'busCompany', 'busLicensed', 'travelTo', 'travelFrom', 'travelDate', 'miles',
-   'meals', 'lodging', 'lodgingPhone', 'summary', 'parentDetails', 'bishopName', 'bishopEmail', 'leaderSig', 'leaderAccounts'].forEach(k => f[k] = val(k));
+   'meals', 'lodging', 'lodgingPhone', 'summary', 'parentDetails', 'approverName', 'approverEmail', 'leaderSig', 'leaderAccounts'].forEach(k => f[k] = val(k));
   f.funds = [...document.querySelectorAll('[name=funds]:checked')].map(i => i.value);
   f.consent = $('#consent').checked;
   const err = $('#err'); err.textContent = '';
