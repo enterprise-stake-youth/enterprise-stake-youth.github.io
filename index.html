@@ -75,6 +75,7 @@
 <div class="wrap" id="app"><p class="note" style="padding:40px 0;text-align:center">Loading…</p></div>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzIJ25F9DTuCFcb1QeCRG4AjgHOH9Ax0WtuAynwEtaX-x5_hu-UsKMm6jTDSL4iuBUJIg/exec';
+const DEFAULT_PARAMS = /*DEFAULT_PARAMS*/{};
 
 /** Talk to the Apps Script web app without Google sign-in cookies. */
 async function api(fn, args) {
@@ -715,7 +716,8 @@ $('#back').addEventListener('click', () => send('return'));
 
 (async function route() {
   const app = document.getElementById('app');
-  const params = Object.fromEntries(new URLSearchParams(location.search));
+  let params = Object.fromEntries(new URLSearchParams(location.search));
+  if (!Object.keys(params).length) params = DEFAULT_PARAMS;   // e.g. /lead → the leader page
   try {
     const r = await api('page', [params]);
     if (r.message) { app.innerHTML = r.message; return; }
